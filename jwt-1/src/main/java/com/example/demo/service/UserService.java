@@ -1,9 +1,10 @@
 package com.example.demo.service;
-
+import com.example.demo.entity.*;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dao.Roledao;
@@ -19,11 +20,8 @@ public class UserService {
 
     @Autowired
     private Roledao roleDao;
-
-	public User registerNewUser(User user) {
-		userdao.save(user);
-		return user;
-	}
+    @Autowired
+    private PasswordEncoder passwordencoder;
 	public void initolesandurser() {
 		Role adminRole=new Role();
 		adminRole.setRoleName("Admin");
@@ -43,18 +41,24 @@ public class UserService {
 		adminRoles.add(adminRole);
 		adminUser.setRole(adminRoles);
 		userdao.save(adminUser);
-		
-		User user=new User();
-		user.setUserFirstName("raj");
-		user.setUserLastName("sharma");
-		user.setUserName("raj123");
-		user.setUserPassword("raj@pass");
-		Set <Role> userRoles=new HashSet<>();
-		userRoles.add(userRole);
-		user.setRole(userRoles);
-		userdao.save(user);
-
 	}
+		
+		
+		public User registerNewUser(User user) {
+	        Role role = roleDao.findById("User").get();
+	        Set<Role> userRoles = new HashSet<>();
+	        userRoles.add(role);
+	        user.setRole(userRoles);
+	        user.setUserPassword(getEncodedPassword(user.getUserPassword()));
+
+	        return userdao.save(user);
+	    }
+
+	    public String getEncodedPassword(String password) {
+	        return passwordencoder.encode(password);
+	    }
+
+	
 
     }
 
